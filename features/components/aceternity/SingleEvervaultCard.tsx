@@ -56,7 +56,7 @@ export function SingleEvervaultCard({
           </div>
         )}
       </div>
-      <h2 className="dark:text-white text-black mt-4 text-base font-light text-center">
+      <h2 className=" text-black mt-4 text-base font-light text-center">
         {text}
       </h2>
     </div>

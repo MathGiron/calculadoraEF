@@ -18,7 +18,7 @@ const Ambientes = () => {
   const [selectedEnvironment, setSelectedEnvironment] = useAtom(selectedEnvironmentAtom);
 
   // Estado global para a etapa atual
-  const [currentStep, setCurrentStep] = useAtom(currentStepAtom);
+  const [, setCurrentStep] = useAtom(currentStepAtom);
 
   // Se estiver carregando, exibe um indicador de carregamento
   if (isLoading) {
@@ -30,19 +30,27 @@ const Ambientes = () => {
     return <div className="flex justify-center items-center h-screen">Erro ao buscar ambientes.</div>;
   }
 
+  // Define o número de colunas com base na quantidade de cards
+  const gridCols = environments.length === 4 ? "grid-cols-4" : "grid-cols-3";
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-center mb-8">Selecione um Ambiente</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <h1 className="text-3xl text-black font-bold text-center mb-8">Selecione um Ambiente</h1>
+
+      {/* Grid Centralizado */}
+      <div
+        className={`grid ${gridCols} gap-6 justify-center max-w-4xl mx-auto`}
+      >
         {/* Mapeia os ambientes e renderiza um card para cada um */}
         {environments?.map((environment) => (
-          <SingleEvervaultCard
-            key={environment.id} // Use o ID do ambiente como chave única
-            text={environment.name} // Exibe o nome do ambiente no texto do card
-            backgroundImg={`/ambientes/${environment.id}.webp`} // Caminho da imagem de fundo
-            selected={selectedEnvironment === environment.id} // Define se o card deve ter borda azul
-            onClick={() => setSelectedEnvironment(environment.id)} // Salva o ID do ambiente selecionado
-          />
+          <div key={environment.id} className="flex justify-center">
+            <SingleEvervaultCard
+              text={environment.name} // Exibe o nome do ambiente no texto do card
+              backgroundImg={`/ambientes/${environment.id}.webp`} // Caminho da imagem de fundo
+              selected={selectedEnvironment === environment.id} // Define se o card deve ter borda azul
+              onClick={() => setSelectedEnvironment(environment.id)} // Salva o ID do ambiente selecionado
+            />
+          </div>
         ))}
       </div>
 
@@ -50,7 +58,7 @@ const Ambientes = () => {
       {selectedEnvironment && (
         <div className="flex justify-center mt-8">
           <Button
-            variant="default"
+            variant="outline"
             onClick={() => setCurrentStep("scenarios")} // Avança para a próxima etapa
           >
             Próximo
