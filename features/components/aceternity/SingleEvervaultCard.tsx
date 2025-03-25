@@ -1,48 +1,64 @@
+// singleevervaultcard.tsx
 "use client";
 import React from "react";
-import { useFetchScenarios } from "hooks"; // Importa o hook para buscar cenários
-import  SingleEvervaultCard  from "aceternity/SingleEvervaultCard"; // Importa o componente SingleEvervaultCard
-import { useAtom } from "jotai";
-import { selectedScenarioAtom } from "lib"; // Importa o átomo para cenário selecionado
+import Image from "next/image";
+import { cn } from "lib";
 
-const Cenarios = ({ environmentId }: { environmentId: string }) => {
-  // Usa o hook useFetchScenarios para buscar os dados dos cenários
-  const { data: scenarios, isLoading, isError } = useFetchScenarios(environmentId);
+interface SingleEvervaultCardProps {
+  text: string;           // Texto exibido abaixo do card
+  backgroundImg?: string; // Caminho da imagem no /public
+  selected?: boolean;     // Define se o card está selecionado
+  icon?: string;          // Caminho do SVG no canto inferior esquerdo
+  onClick?: () => void;   // Função a ser executada ao clicar no card
+}
 
-  // Estado global para o cenário selecionado
-  const [selectedScenario, setSelectedScenario] = useAtom(selectedScenarioAtom);
-
-  // Se estiver carregando, exibe um indicador de carregamento
-  if (isLoading) {
-    return <div className="flex justify-center items-center h-screen">Carregando...</div>;
-  }
-
-  // Se ocorrer um erro, exibe uma mensagem de erro
-  if (isError) {
-    return <div className="flex justify-center items-center h-screen">Erro ao buscar cenários.</div>;
-  }
-
+export function SingleEvervaultCard({
+  text,
+  backgroundImg,
+  selected = false,
+  icon,
+  onClick,
+}: SingleEvervaultCardProps) {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-center mb-8">Cenários Disponíveis</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {/* Mapeia os cenários e renderiza um card para cada um */}
-        {scenarios?.map((scenario) => (
-          <div
-            key={scenario.id} // Use o ID do cenário como chave única
-            className="cursor-pointer" // Adiciona cursor pointer para indicar que é clicável
-            onClick={() => setSelectedScenario(scenario.id)} // Salva o cenário selecionado
-          >
-            <SingleEvervaultCard
-              text={scenario.name} // Exibe o nome do cenário no texto do card
-              backgroundImg={`/cenarios/${scenario.id}.webp`} // Caminho da imagem de fundo
-              selected={selectedScenario === scenario.id} // Define se o card deve ter borda azul
+    <div
+      className={cn(
+        "flex flex-col items-center cursor-pointer", // Adiciona cursor pointe
+      )}
+      onClick={onClick} // Executa a função onClick ao clicar no card
+    >
+      <div
+        className={cn(
+          "relative h-[20rem] w-[14rem] rounded-2xl overflow-hidden",
+          selected
+            ? "border border-[#2673ff]"
+            : "border border-black/[0.2] dark:border-white/[0.2]"
+        )}
+      >
+        {/* Imagem de fundo */}
+        {backgroundImg && (
+          <Image
+            src={backgroundImg}
+            alt={text}
+            fill
+            className="object-cover object-center"
+          />
+        )}
+        {/* SVG no canto inferior esquerdo */}
+        {icon && (
+          <div className="absolute bottom-2 left-2 z-10">
+            <Image
+              src={icon}
+              alt="Icon"
+              width={40}
+              height={40}
+              className="h-10 w-10"
             />
           </div>
-        ))}
+        )}
       </div>
+      <h2 className="dark:text-white text-black mt-4 text-base font-light text-center">
+        {text}
+      </h2>
     </div>
   );
-};
-
-export default Cenarios;
+}
