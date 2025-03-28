@@ -1,28 +1,24 @@
 // components/cenarios/index.tsx
 "use client";
 import React from "react";
-import { useFetchScenarios } from "hooks"; // Importa o hook para buscar cenários
-import { SingleEvervaultCard } from "aceternity"; // Importa o componente SingleEvervaultCard
-import { Button } from "ui/button"; // Importa o componente Button
+import { useFetchScenarios } from "hooks"; // Hook para buscar cenários
+import { SingleEvervaultCard } from "aceternity"; // Card de cenários
+import { Button } from "ui/button"; // Botão
 import { useAtom } from "jotai";
 import {
   selectedScenarioAtom,
   currentStepAtom,
-  selectedEnvironmentAtom,
-} from "lib/atoms"; // Importa os átomos
+} from "lib/atoms"; // Átomos globais
 
 const Cenarios = ({ environmentId }: { environmentId: string }) => {
-  // Usa o hook useFetchScenarios para buscar os dados dos cenários
-  const { data: scenarios, isLoading, isError } = useFetchScenarios(environmentId);
-
   // Estado global para o cenário selecionado
   const [selectedScenario, setSelectedScenario] = useAtom(selectedScenarioAtom);
 
   // Estado global para a etapa atual
   const [, setCurrentStep] = useAtom(currentStepAtom);
 
-  // Estado global para o ambiente selecionado
-  const [, setSelectedEnvironment] = useAtom(selectedEnvironmentAtom);
+  // Hook para buscar cenários
+  const { data: scenarios, isLoading, isError } = useFetchScenarios(environmentId);
 
   // Se estiver carregando, exibe um indicador de carregamento
   if (isLoading) {
@@ -39,13 +35,13 @@ const Cenarios = ({ environmentId }: { environmentId: string }) => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl text-black font-bold text-center mb-8">
-        Cenários para o Ambiente:
+      <h1 className="text-2xl text-black  font-bold text-center mb-8">
+        Cenários para o Ambiente: 
       </h1>
 
       {/* Grid Centralizado */}
       <div
-        className={`grid ${gridCols}  justify-center max-w-4xl mx-auto`}
+        className={`grid ${gridCols} gap-6 justify-center max-w-4xl mx-auto`}
       >
         {/* Mapeia os cenários e renderiza um card para cada um */}
         {scenarios?.map((scenario) => (
@@ -66,8 +62,6 @@ const Cenarios = ({ environmentId }: { environmentId: string }) => {
           variant="outline"
           onClick={() => {
             setCurrentStep("environments"); // Retorna à seleção de ambientes
-            setSelectedEnvironment(null); // Limpa o ambiente selecionado
-            setSelectedScenario(null); // Limpa o cenário selecionado
           }}
         >
           Voltar
@@ -75,10 +69,7 @@ const Cenarios = ({ environmentId }: { environmentId: string }) => {
         {selectedScenario && (
           <Button
             variant="outline"
-            onClick={() => {
-              // Avança para o próximo passo (exemplo: resultados ou outra etapa)
-              console.log("Avançar para o próximo passo...");
-            }}
+            onClick={() => setCurrentStep("appliances")} // Avança para a próxima etapa
           >
             Próximo
           </Button>

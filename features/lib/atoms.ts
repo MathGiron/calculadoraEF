@@ -8,7 +8,9 @@ export const selectedEnvironmentAtom = atom<string | null>(null);
 export const selectedScenarioAtom = atom<string | null>(null);
 
 // Atom para controlar a etapa atual (ambientes ou cenários)
-export const currentStepAtom = atom<"environments" | "scenarios">("environments");
+export const currentStepAtom = atom<"environments" | "scenarios" | "appliances">("environments");
+
+export const selectedAppliancesAtom = atom<string[]>([]);
 
 // Atom para o card selecionado
 export const selectedCardAtom = atom<string | null>(null);

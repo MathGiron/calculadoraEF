@@ -17,3 +17,11 @@ export interface Produto {
   metafields: Metafield[]; // Lista de metafields personalizados
 }
 
+export interface Appliance {
+  id: string; // ID do aparelho
+  name: string; // Nome do aparelho
+  powerW: number; // Potência em watts
+  hoursPerDay: number; // Horas de uso por dia
+  svgName: string; // Nome do arquivo SVG
+
+}

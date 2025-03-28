@@ -35,11 +35,11 @@ const Ambientes = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl text-black font-bold text-center mb-8">Selecione um Ambiente</h1>
+      <h1 className="text-3xl text-black font-bold text-center mb-8">Estou escolhendo um gerador solar para :</h1>
 
       {/* Grid Centralizado */}
       <div
-        className={`grid ${gridCols} gap-6 justify-center max-w-4xl mx-auto`}
+        className={`grid ${gridCols} gap-15 justify-center max-w-4xl mx-auto`}
       >
         {/* Mapeia os ambientes e renderiza um card para cada um */}
         {environments?.map((environment) => (
