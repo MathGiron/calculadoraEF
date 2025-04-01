@@ -1,35 +1,35 @@
 // components/appliances/card-hover-effect.tsx
 "use client";
 import { cn } from "lib";
-import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/features/components/ui/input";
+import { useEnergyCalculation } from "hooks";
+import { Appliance } from "hooks";
 
 export const HoverEffect = ({
   items,
   className,
   selectedIds,
   onSelectionChange,
+  onTotalKwhChange,
+  onTotalWattsPerHourChange,
 }: {
-  items: {
-    id: string;
-    title: string;
-    description: string | React.ReactNode;
-    link: string;
-    icon?: React.ReactNode;
-    powerW: number; // Valor de potência em watts
-    hoursPerDay: number; // Horas de uso por dia
-  }[];
+  items: Appliance[];
   className?: string;
   selectedIds: string[];
   onSelectionChange?: (selectedIds: string[]) => void;
+  onTotalKwhChange?: (totalKwh: number) => void;
+  onTotalWattsPerHourChange?: (totalWattsPerHour: number) => void;
 }) => {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [powerValues, setPowerValues] = useState<{ [key: string]: number }>(
     Object.fromEntries(items.map((item) => [item.id, item.powerW]))
   );
+  const [hoursValues, setHoursValues] = useState<{ [key: string]: number }>(
+    Object.fromEntries(items.map((item) => [item.id, item.hoursPerDay]))
+  );
 
-  // Função para lidar com a seleção do card
+  const { calculateKwh, calculateTotalKwh, calculateTotalWattsPerHour } = useEnergyCalculation();
+
   const handleCardSelection = (id: string) => {
     const isSelected = selectedIds.includes(id);
     const newSelectedIds = isSelected
@@ -40,26 +40,52 @@ export const HoverEffect = ({
     }
   };
 
-  // Função para selecionar/desselecionar todos os cards
   const handleSelectAll = () => {
     if (onSelectionChange) {
       if (selectedIds.length === items.length) {
-        onSelectionChange([]); // Desseleciona todos
+        onSelectionChange([]);
       } else {
-        onSelectionChange(items.map((item) => item.id)); // Seleciona todos
+        onSelectionChange(items.map((item) => item.id));
       }
     }
   };
 
-  // Função para atualizar o valor de potência
-  const handlePowerChange = (id: string, value: string) => {
-    const numericValue = value ? parseInt(value, 10) : 0;
-    setPowerValues((prev) => ({ ...prev, [id]: numericValue || 0 }));
+  const handleInputChange = (
+    id: string,
+    field: "powerW" | "hoursPerDay",
+    value: string
+  ) => {
+    const numericValue = value ? parseFloat(value) : 0;
+    if (field === "powerW") {
+      setPowerValues((prev) => ({ ...prev, [id]: numericValue }));
+    } else if (field === "hoursPerDay") {
+      setHoursValues((prev) => ({ ...prev, [id]: numericValue }));
+    }
   };
+
+  const customValues = items.reduce((acc, item) => {
+    acc[item.id] = {
+      powerW: powerValues[item.id] ?? item.powerW,
+      hoursPerDay: hoursValues[item.id] ?? item.hoursPerDay,
+    };
+    return acc;
+  }, {} as { [key: string]: { powerW: number; hoursPerDay: number } });
+
+  const totalKwh = calculateTotalKwh(selectedIds, customValues);
+  const totalWattsPerHour = calculateTotalWattsPerHour(selectedIds, customValues);
+
+  useEffect(() => {
+    if (onTotalKwhChange) {
+      onTotalKwhChange(totalKwh);
+    }
+    if (onTotalWattsPerHourChange) {
+      onTotalWattsPerHourChange(totalWattsPerHour);
+    }
+  }, [totalKwh, totalWattsPerHour, onTotalKwhChange, onTotalWattsPerHourChange]);
 
   return (
     <div>
-      {/* Botão para selecionar/desselecionar todos */}
+      
       <div className="flex justify-end mb-4">
         <button
           className="text-sm text-blue-500 hover:underline"
@@ -68,54 +94,56 @@ export const HoverEffect = ({
           {selectedIds.length === items.length ? "Desmarcar Todos" : "Marcar Todos"}
         </button>
       </div>
-
-      {/* Grid de Cards */}
       <div className={cn("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2", className)}>
-        {items.map((item, idx) => (
-          <label
-            key={item.id}
-            className="relative group block p-2 h-full w-full cursor-pointer"
-            onMouseEnter={() => setHoveredIndex(idx)}
-            onMouseLeave={() => setHoveredIndex(null)}
-          >
-            <input
-              type="checkbox"
-              checked={selectedIds.includes(item.id)}
-              onChange={() => handleCardSelection(item.id)}
-              className="hidden" // Esconde o input nativo
-            />
-            <AnimatePresence>
-              {hoveredIndex === idx && (
-                <motion.span
-                  key={`hover-background-${idx}`}
-                  className="absolute inset-0 h-full w-full bg-slate-700/[0.8] block rounded-3xl"
-                  layoutId="hoverBackground"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1, transition: { duration: 0.2 } }}
-                  exit={{ opacity: 0, transition: { duration: 0.2, delay: 0.3 } }}
-                />
-              )}
-            </AnimatePresence>
-            <Card isSelected={selectedIds.includes(item.id)}>
-              <div className="mb-2 flex justify-between items-center">
-                {/* Ícone */}
-                <div>{item.icon}</div>
-                {/* Campo de Entrada para Potência */}
-                <div className="flex items-center space-x-2">
-                  <Input
-                    type="number"
-                    value={powerValues[item.id]}
-                    onChange={(e) => handlePowerChange(item.id, e.target.value)}
-                    className="w-24 h-8 text-zinc-500 group-hover:text-white text-sm p-2 border-1 rounded-md"
-                  />
-                  <span className="text-zinc-500 group-hover:text-white text-sm">W</span>
+        {items.map((item) => {
+          const currentPower = powerValues[item.id] ?? item.powerW;
+          const currentHours = hoursValues[item.id] ?? item.hoursPerDay;
+          const kwh = calculateKwh(currentPower, currentHours);
+
+          return (
+            <label
+              key={item.id}
+              className="relative block p-2 h-full w-full cursor-pointer"
+            >
+              <input
+                type="checkbox"
+                checked={selectedIds.includes(item.id)}
+                onChange={() => handleCardSelection(item.id)}
+                className="hidden"
+              />
+              <Card isSelected={selectedIds.includes(item.id)}>
+                <div className="mb-2 flex justify-between items-center">
+                  <div>{item.icon}</div>
+                  <div className="flex flex-col space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <Input
+                        type="number"
+                        value={powerValues[item.id]}
+                        onChange={(e) => handleInputChange(item.id, "powerW", e.target.value)}
+                        className="w-24 h-8 text-zinc-500 text-sm p-2 border-1 rounded-md"
+                      />
+                      <span className="text-zinc-500 text-sm">W</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Input
+                        type="number"
+                        value={hoursValues[item.id]}
+                        onChange={(e) => handleInputChange(item.id, "hoursPerDay", e.target.value)}
+                        className="w-24 h-8 text-zinc-500 text-sm p-2 border-1 rounded-md"
+                      />
+                      <span className="text-zinc-500 text-sm">h/dia</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <CardTitle>{item.title}</CardTitle>
-              <CardDescription>{item.description}</CardDescription>
-            </Card>
-          </label>
-        ))}
+                <CardTitle>{item.name}</CardTitle>
+                <CardDescription>{item.description}</CardDescription>
+                <div className="mt-2 text-black text-sm">
+                  Consumo: {kwh.toFixed(2)} kWh/dia
+                </div>
+              </Card>
+            </label>
+          );
+        })}
       </div>
     </div>
   );
@@ -153,14 +181,7 @@ export const CardTitle = ({
   children: React.ReactNode;
 }) => {
   return (
-    <h4
-      className={cn(
-        "text-black group-hover:text-white font-bold tracking-wide",
-        className
-      )}
-    >
-      {children}
-    </h4>
+    <h4 className={cn("text-black font-bold tracking-wide", className)}>{children}</h4>
   );
 };
 
@@ -172,12 +193,7 @@ export const CardDescription = ({
   children: React.ReactNode;
 }) => {
   return (
-    <p
-      className={cn(
-        "mt-2 text-zinc-400 group-hover:text-white tracking-wide leading-relaxed text-sm",
-        className
-      )}
-    >
+    <p className={cn("mt-2 text-zinc-400 tracking-wide leading-relaxed text-sm", className)}>
       {children}
     </p>
   );

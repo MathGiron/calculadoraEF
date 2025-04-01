@@ -1,15 +1,28 @@
-export * from "./types"
-export * from "./api"
+// hooks/index.ts
+export * from "./types";
+export * from "./api";
+export * from "./useEnergyCalculation";
 import { useQuery } from "@tanstack/react-query";
-import { Response, Produto, fetchData, createHeaders, BASE_URL } from ".";
+import { Response, Produto, CalculoResponse, fetchData, createHeaders, BASE_URL } from ".";
+import { Appliance } from "hooks";
 
-// Hooks para buscar dados usando TanStack Query
+const transformToAppliance = (response: Response): Appliance => ({
+  id: response.id,
+  name: response.name,
+  powerW: response.powerW ?? 0,
+  hoursPerDay: response.hoursPerDay ?? 0,
+  svgName: response.svgName,
+});
+
 export function useFetchAppliances(scenarioId: string) {
   return useQuery({
     queryKey: ["appliances", scenarioId],
-    queryFn: () => fetchData<Response[]>(`${BASE_URL}/appliances?scenarioId=${scenarioId}`),
+    queryFn: async () => {
+      const data = await fetchData<Response[]>(`${BASE_URL}/appliances?scenarioId=${scenarioId}`);
+      return data.map(transformToAppliance);
+    },
     onError: (error) => console.error("Erro ao buscar appliances:", error),
-    retry: 1, // Tentar novamente apenas uma vez em caso de falha
+    retry: 1,
   });
 }
 
@@ -31,18 +44,24 @@ export function useFetchEnvironments() {
   });
 }
 
-//----------SESSÃO DE PRODUTOS----------\\
-
-export function useFetchProducts() {
+export function useFetchProducts(watts?: number) {
+  console.log("useFetchProducts chamado com watts:", watts);
   return useQuery({
-    queryKey: ["products"],
-    queryFn: () => fetchData<Produto[]>(`${BASE_URL}/products`),
-    onError: (error) => console.error("Erro ao buscar products:", error),
+    queryKey: ["calculo", watts],
+    queryFn: async () => {
+      const url = `${BASE_URL}/calculo${watts ? `?wh=${watts}` : ""}`;
+      console.log("Buscando cálculo na URL:", url);
+      const data = await fetchData<CalculoResponse>(url);
+      console.log("Resposta completa do cálculo:", data);
+      console.log("Produtos extraídos:", data.produtos);
+      return data.produtos; // Retorna apenas o array de produtos
+    },
+    onError: (error) => console.error("Erro ao buscar cálculo:", error),
     retry: 1,
+    enabled: !!watts && watts > 0,
   });
 }
 
-// Função para recarregar produtos (não usa TanStack Query diretamente)
 export async function reloadProducts(): Promise<void> {
   try {
     const headers = createHeaders();
