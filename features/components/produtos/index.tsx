@@ -2,7 +2,7 @@
 "use client";
 import React from "react";
 import { useFetchProducts } from "hooks";
-import { ProductCard } from "aceternity"; // Assumindo que "aceternity" é o caminho correto
+import { ProductCard } from "aceternity";
 import { Button } from "ui/button";
 import { useAtom } from "jotai";
 import { currentStepAtom } from "lib/atoms";
@@ -37,7 +37,6 @@ export const ProductIndex = ({ totalWatts }: ProductIndexProps) => {
     return <p className="text-center">Nenhum produto recomendado disponível.</p>;
   }
 
-  // Filtra produtos únicos por ID
   const uniqueProducts = Array.from(
     new Map(products.map((product) => [product.id, product])).values()
   );
@@ -46,7 +45,7 @@ export const ProductIndex = ({ totalWatts }: ProductIndexProps) => {
   const recommendedProducts = uniqueProducts.map((product) => {
     if (!product || !product.variants || !Array.isArray(product.variants)) {
       console.error("Produto inválido ou sem variants:", product);
-      return null; // Pula produtos inválidos
+      return null;
     }
     const availableVariant = product.variants.find(v => v.inventoryQuantity > 0) || product.variants[0];
     return {
@@ -57,12 +56,12 @@ export const ProductIndex = ({ totalWatts }: ProductIndexProps) => {
       inventoryQuantity: availableVariant.inventoryQuantity,
       purchaseLink: `https://ecoflow-timber.com.br/products/${product.id}`,
     };
-  }).filter(Boolean); // Remove nulls de produtos inválidos
+  }).filter(Boolean);
 
   console.log("Produtos recomendados preparados:", recommendedProducts);
 
   const handleBackToStart = () => {
-    setCurrentStep("environments"); // Volta ao início
+    setCurrentStep("environments");
   };
 
   return (

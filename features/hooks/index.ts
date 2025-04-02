@@ -51,7 +51,7 @@ export function useFetchEnvironments() {
 
 export function useFetchProducts(watts?: number) {
   console.log("useFetchProducts chamado com watts:", watts);
-  return useQuery({
+  return useQuery<Produto[], Error>({
     queryKey: ["calculo", watts],
     queryFn: async () => {
       const url = `${BASE_URL}/calculo${watts ? `?wh=${watts}` : ""}`;
@@ -59,7 +59,7 @@ export function useFetchProducts(watts?: number) {
       const data = await fetchData<CalculoResponse>(url);
       console.log("Resposta completa do cálculo:", data);
       console.log("Produtos extraídos:", data.produtos);
-      return data.produtos; // Retorna apenas o array de produtos
+      return data.produtos;
     },
     onError: (error) => console.error("Erro ao buscar cálculo:", error),
     retry: 1,
