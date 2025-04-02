@@ -73,8 +73,8 @@ const Appliances = () => {
 
       {selectedAppliances.length > 0 && (
         <div className="flex justify-center mb-4">
-          <p className="text-black text-lg">
-            Consumo Total:   <span className=" text-[#2b7fff] text-xl "> {totalWattsPerHour.toFixed(0)} W/h</span>
+          <p className="text-black text-sm">
+          Consumo diário de energia*:  <span className=" text-black font-bold text-lg "> {totalWattsPerHour.toFixed(0)} W/h</span>
           </p>
         </div>
       )}

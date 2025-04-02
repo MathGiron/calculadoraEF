@@ -38,7 +38,12 @@ export function useFetchScenarios(environmentId: string) {
 export function useFetchEnvironments() {
   return useQuery({
     queryKey: ["environments"],
-    queryFn: () => fetchData<Response[]>(`${BASE_URL}/environments`),
+    queryFn: async () => {
+      const data = await fetchData<Response[]>(`${BASE_URL}/environments`);
+      const filteredData = data.filter((environment) => environment.id !== "others");
+      console.log("Environments filtrados (sem 'others'):", filteredData);
+      return filteredData;
+    },
     onError: (error) => console.error("Erro ao buscar environments:", error),
     retry: 1,
   });

@@ -37,6 +37,10 @@ export const ProductIndex = ({ totalWatts }: ProductIndexProps) => {
     return <p className="text-center">Nenhum produto recomendado disponível.</p>;
   }
 
+  const uniqueProducts = Array.from(
+    new Map(products.map((product) => [product.id, product])).values()
+  );
+
   const recommendedProducts = products.map((product) => {
     if (!product || !product.variants || !Array.isArray(product.variants)) {
       console.error("Produto inválido ou sem variants:", product);
