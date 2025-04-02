@@ -37,11 +37,13 @@ export const ProductIndex = ({ totalWatts }: ProductIndexProps) => {
     return <p className="text-center">Nenhum produto recomendado disponível.</p>;
   }
 
+  // Filtra produtos únicos por ID
   const uniqueProducts = Array.from(
     new Map(products.map((product) => [product.id, product])).values()
   );
+  console.log("Produtos únicos filtrados:", uniqueProducts);
 
-  const recommendedProducts = products.map((product) => {
+  const recommendedProducts = uniqueProducts.map((product) => {
     if (!product || !product.variants || !Array.isArray(product.variants)) {
       console.error("Produto inválido ou sem variants:", product);
       return null; // Pula produtos inválidos
@@ -68,7 +70,13 @@ export const ProductIndex = ({ totalWatts }: ProductIndexProps) => {
       <h2 className="text-xl text-black font-bold text-center mb-4">
         Produtos Recomendados
       </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div
+        className={
+          recommendedProducts.length === 1
+            ? "flex justify-center"
+            : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        }
+      >
         {recommendedProducts.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}
