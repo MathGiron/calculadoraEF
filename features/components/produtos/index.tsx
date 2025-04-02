@@ -42,21 +42,23 @@ export const ProductIndex = ({ totalWatts }: ProductIndexProps) => {
   );
   console.log("Produtos únicos filtrados:", uniqueProducts);
 
-  const recommendedProducts = uniqueProducts.map((product) => {
-    if (!product || !product.variants || !Array.isArray(product.variants)) {
-      console.error("Produto inválido ou sem variants:", product);
-      return null;
-    }
-    const availableVariant = product.variants.find(v => v.inventoryQuantity > 0) || product.variants[0];
-    return {
-      id: product.id,
-      title: product.title,
-      image: product.image,
-      price: availableVariant.price,
-      inventoryQuantity: availableVariant.inventoryQuantity,
-      purchaseLink: `https://ecoflow-timber.com.br/products/${product.id}`,
-    };
-  }).filter(Boolean);
+  const recommendedProducts = uniqueProducts
+    .map((product) => {
+      if (!product || !product.variants || !Array.isArray(product.variants)) {
+        console.error("Produto inválido ou sem variants:", product);
+        return null;
+      }
+      const availableVariant = product.variants.find(v => v.inventoryQuantity > 0) || product.variants[0];
+      return {
+        id: product.id,
+        title: product.title,
+        image: product.image,
+        price: availableVariant.price,
+        inventoryQuantity: availableVariant.inventoryQuantity,
+        purchaseLink: `https://ecoflow-timber.com.br/products/${product.id}`,
+      };
+    })
+    .filter(Boolean) as { id: string; title: string; image: string; price: string; inventoryQuantity: number; purchaseLink: string }[];
 
   console.log("Produtos recomendados preparados:", recommendedProducts);
 

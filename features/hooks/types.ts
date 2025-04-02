@@ -4,6 +4,7 @@ export interface Response {
   name: string;
   powerW?: number;
   hoursPerDay?: number;
+  svgName: string;
 }
 
 export interface Variant {
