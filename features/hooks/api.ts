@@ -5,7 +5,7 @@ export const createHeaders = () => {
     return myHeaders;
   };
   
-  export const BASE_URL = "https://calculadora.ecoflow-timber.com.br";
+  export const BASE_URL = "https://api.calculadora.ecoflow-timber.com.br";
   
   // Função genérica para fazer requisições GET
  export async function fetchData<T>(url: string): Promise<T> {
