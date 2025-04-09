@@ -22,7 +22,7 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <div className="mx-auto w-80">
       <div className="group relative h-full overflow-hidden rounded-2xl border border-zinc-100 bg-white transition duration-200 hover:shadow-xl">
-        <div className="relative aspect-[16/10] w-full overflow-hidden rounded-tl-lg rounded-tr-lg bg-gray-100">
+        <div className="relative aspect-[16/10] w-full overflow-hidden rounded-tl-lg rounded-tr-lg bg-white">
           <Image
             src={product.image}
             alt={product.title}
