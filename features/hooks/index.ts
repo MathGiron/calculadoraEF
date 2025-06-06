@@ -67,6 +67,21 @@ export function useFetchProducts(watts?: number) {
   });
 }
 
+export function useFetchProductImages() {
+  return useQuery<Produto[], Error>({
+    queryKey: ["productImages"],
+    queryFn: async () => {
+      const url = `${BASE_URL}/produtos`;
+      console.log("Buscando imagens na URL:", url);
+      const data = await fetchData<Produto[]>(url);
+      console.log("Produtos com imagens recebidos:", data);
+      return data;
+    },
+    onError: (error) => console.error("Erro ao buscar imagens:", error),
+    retry: 1,
+  });
+}
+
 export async function reloadProducts(): Promise<void> {
   try {
     const headers = createHeaders();

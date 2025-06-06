@@ -8,6 +8,7 @@ export interface Response {
 }
 
 export interface Variant {
+  id: string;
   price: string;
   inventoryQuantity: number;
 }
@@ -15,9 +16,10 @@ export interface Variant {
 export interface Produto {
   id: string;
   title: string;
-  image: string;
+  image?: string;
   variants: Variant[];
   metafields?: { key: string; value: string }[];
+  capacidade?: number;
 }
 
 export interface CalculoResponse {
