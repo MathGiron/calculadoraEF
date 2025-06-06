@@ -56,13 +56,13 @@ export const ProductIndex = ({ totalWatts }: ProductIndexProps) => {
 
       // Get image from /produtos
       const productWithImage = productImages.find(p => p.id === product.id);
-      let image = productWithImage?.image || product.image;
+      let image: string | undefined = productWithImage?.image || product.image;
       if (!image && product.metafields) {
         console.log(`Imagem ausente para produto ${product.id}, buscando em metafields:`, product.metafields);
         const imageMetafield = product.metafields.find(
           m => m.key.toLowerCase().includes("image") || m.key.toLowerCase().includes("photo")
         );
-        image = imageMetafield?.value || null;
+        image = imageMetafield?.value; // Mantém undefined se não encontrar
       }
 
       if (!image) {
