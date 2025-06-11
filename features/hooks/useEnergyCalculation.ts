@@ -1,35 +1,28 @@
+// hooks/useEnergyCalculation.ts
+import { useAtom } from "jotai";
+import { selectedAppliancesAtom } from "lib/atoms";
+
 export function useEnergyCalculation() {
-  const calculateKwh = (powerW: number, hoursPerDay: number): number => {
-    return (powerW * hoursPerDay) / 1000; // kWh/dia
+  const [selectedAppliances] = useAtom(selectedAppliancesAtom);
+
+  const calculateKwh = (powerW: number, hoursPerDay: number, quantity: number): number => {
+    return (powerW * hoursPerDay * quantity) / 1000; // kWh/dia
   };
 
-  const calculateWattsPerHour = (powerW: number, hoursPerDay: number): number => {
-    return powerW * hoursPerDay; // Wh/dia (consumo total diário em watts)
+  const calculateWattsPerHour = (powerW: number, hoursPerDay: number, quantity: number): number => {
+    return powerW * hoursPerDay * quantity; // Wh/dia
   };
 
-  const calculateTotalKwh = (
-    selectedIds: string[],
-    customValues: { [key: string]: { powerW: number; hoursPerDay: number } }
-  ): number => {
-    return selectedIds.reduce((total, id) => {
-      const item = customValues[id];
-      if (!item) return total;
-      const { powerW, hoursPerDay } = item;
-      return total + calculateKwh(powerW, hoursPerDay);
-    }, 0);
-  };
+  const totalKwh = selectedAppliances.reduce((total, appliance) => {
+    return total + calculateKwh(appliance.powerW, appliance.hoursPerDay, appliance.quantity);
+  }, 0);
 
-  const calculateTotalWattsPerHour = (
-    selectedIds: string[],
-    customValues: { [key: string]: { powerW: number; hoursPerDay: number } }
-  ): number => {
-    return selectedIds.reduce((total, id) => {
-      const item = customValues[id];
-      if (!item) return total;
-      const { powerW, hoursPerDay } = item;
-      return total + calculateWattsPerHour(powerW, hoursPerDay);
-    }, 0);
-  };
+  const totalWatts = selectedAppliances.reduce((total, appliance) => {
+    return total + calculateWattsPerHour(appliance.powerW, appliance.hoursPerDay, appliance.quantity);
+  }, 0);
 
-  return { calculateKwh, calculateTotalKwh, calculateWattsPerHour, calculateTotalWattsPerHour };
+  console.log("Total kWh calculado:", totalKwh);
+  console.log("Total watts calculado:", totalWatts);
+
+  return { calculateKwh, calculateWattsPerHour, totalKwh, totalWatts };
 }

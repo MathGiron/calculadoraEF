@@ -33,6 +33,13 @@ export interface Appliance {
   powerW: number;
   hoursPerDay: number;
   svgName?: string;
-  icon?: React.ReactNode;
-  description?: string | React.ReactNode;
+}
+
+export interface SelectedAppliance {
+  id: string;
+  name: string;
+  powerW: number;
+  hoursPerDay: number;
+  quantity: number;
+  svgName?: string;
 }

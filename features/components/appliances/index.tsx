@@ -1,121 +1,122 @@
 // components/appliances/index.tsx
 "use client";
 import React, { useState, useEffect } from "react";
-import { HoverEffect } from "aceternity";
+import { useFetchAppliances } from "hooks";
+import { useAtom } from "jotai";
+import { selectedScenarioAtom, selectedAppliancesAtom, currentStepAtom } from "lib/atoms";
+import { ApplianceCard } from "aceternity";
 import { ProductIndex } from "../produtos";
 import { Button } from "ui/button";
-import { useAtom } from "jotai";
-import {
-  selectedScenarioAtom,
-  selectedAppliancesAtom,
-  currentStepAtom,
-} from "lib/atoms";
-import Image from "next/image";
-import { useFetchAppliances } from "hooks";
-import { Appliance } from "hooks";
+import { PlusIcon } from "@heroicons/react/24/outline";
+import { useEnergyCalculation } from "hooks";
 
-const Appliances = () => {
+const AppliancesPage = () => {
   const [selectedScenario] = useAtom(selectedScenarioAtom);
   const [selectedAppliances, setSelectedAppliances] = useAtom(selectedAppliancesAtom);
   const [, setCurrentStep] = useAtom(currentStepAtom);
-  const [totalKwh, setTotalKwh] = useState<number>(0);
-  const [totalWattsPerHour, setTotalWattsPerHour] = useState<number>(0);
-  const [debouncedWatts, setDebouncedWatts] = useState<number>(0);
   const [showProduct, setShowProduct] = useState<boolean>(false);
-
-  const { data: appliances, isLoading, isError } = useFetchAppliances(selectedScenario || "");
+  const [debouncedWatts, setDebouncedWatts] = useState<number>(0);
+  const { data: appliances, isLoading, isError, error } = useFetchAppliances(selectedScenario || "");
+  const { totalWatts } = useEnergyCalculation();
 
   useEffect(() => {
     if (showProduct) {
       const timeout = setTimeout(() => {
-        setDebouncedWatts(totalWattsPerHour);
+        setDebouncedWatts(totalWatts);
       }, 500);
       return () => clearTimeout(timeout);
     }
-  }, [totalWattsPerHour, showProduct]);
+  }, [totalWatts, showProduct]);
+
+  console.log("AppliancesPage renderizado com scenarioId:", selectedScenario);
+  console.log("Estado do useFetchAppliances:", { isLoading, isError, appliances });
+  console.log("Total watts calculado:", totalWatts);
 
   if (isLoading) {
-    return <div className="flex justify-center items-center h-screen">Carregando appliances...</div>;
+    return <div className="flex justify-center items-center h-screen">Carregando eletrodomésticos...</div>;
   }
 
   if (isError) {
-    return <div className="flex justify-center items-center h-screen">Erro ao buscar appliances.</div>;
+    console.error("Erro ao buscar appliances:", error);
+    return <div className="flex justify-center items-center h-screen">Erro ao buscar eletrodomésticos: {error?.message || "Erro desconhecido"}</div>;
   }
 
-  const handleTotalKwhChange = (total: number) => {
-    setTotalKwh(total);
-  };
+  if (!appliances || appliances.length === 0) {
+    console.log("Nenhum appliance disponível para scenarioId:", selectedScenario);
+    return <p className="flex justify-center items-center h-screen">Nenhum eletrodoméstico disponível.</p>;
+  }
 
-  const handleTotalWattsPerHourChange = (total: number) => {
-    console.log("totalWattsPerHour atualizado:", total);
-    setTotalWattsPerHour(total);
-  };
-
-  const handleNextClick = () => {
-    console.log("Aparelhos selecionados:", selectedAppliances);
-    console.log("Consumo total em kWh/dia:", totalKwh);
-    console.log("Consumo total em W/h:", totalWattsPerHour);
-    setShowProduct(true);
-  };
-
-  // Se showProduct for true, renderiza apenas o ProductIndex
   if (showProduct && debouncedWatts > 0) {
     return <ProductIndex totalWatts={debouncedWatts} />;
   }
 
-  // Caso contrário, renderiza a interface de seleção de aparelhos
+  const handleAddAppliance = () => {
+    const defaultAppliance = appliances[0];
+    setSelectedAppliances([
+      ...selectedAppliances,
+      {
+        id: defaultAppliance.id,
+        name: defaultAppliance.name,
+        powerW: defaultAppliance.powerW || 0,
+        hoursPerDay: defaultAppliance.hoursPerDay || 0,
+        quantity: 1,
+        svgName: defaultAppliance.svgName || "",
+      },
+    ]);
+    console.log("Novo appliance adicionado:", selectedAppliances);
+  };
+
+  const handleProceed = () => {
+    console.log("Aparelhos selecionados:", selectedAppliances);
+    console.log("Consumo total em W/h:", totalWatts);
+    setShowProduct(true);
+    setCurrentStep("products");
+  };
+
+  const handleBack = () => {
+    setCurrentStep("scenarios");
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-xl text-black font-bold text-center mb-8">
-        Aparelhos Disponíveis para o Cenário:{" "}
-        
+      <h1 className="text-2xl text-black  font-bold text-center mb-8">
+        Selecione os Eletrodomésticos
       </h1>
-
       {selectedAppliances.length > 0 && (
         <div className="flex justify-center mb-4">
-          <p className="text-black text-sm">
-          Consumo diário de energia*:  <span className=" text-black font-bold text-lg "> {totalWattsPerHour.toFixed(0)} W/h</span>
+          <p className="text-gray-600 text-sm">
+            Consumo diário de energia*: <span className="text-gray-800 font-bold text-lg">{totalWatts.toFixed(0)} W/h</span>
           </p>
         </div>
       )}
-
-      {appliances && appliances.length > 0 ? (
-        <HoverEffect
-          items={appliances.map((appliance: Appliance) => ({
-            id: appliance.id,
-            name: appliance.name,
-            description: `${appliance.hoursPerDay}h/dia`,
-            icon: appliance.svgName ? (
-              <Image
-                src={`/svg/${appliance.svgName}`}
-                alt={appliance.name}
-                width={40}
-                height={40}
-                className="object-contain"
-              />
-            ) : null,
-            powerW: appliance.powerW,
-            hoursPerDay: appliance.hoursPerDay,
-          }))}
-          selectedIds={selectedAppliances}
-          onSelectionChange={(newSelectedIds) => setSelectedAppliances(newSelectedIds)}
-          onTotalKwhChange={handleTotalKwhChange}
-          onTotalWattsPerHourChange={handleTotalWattsPerHourChange}
-        />
-      ) : (
-        <div className="flex justify-center items-center h-20">Nenhum aparelho disponível.</div>
-      )}
-
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {selectedAppliances.map((appliance, index) => (
+          <ApplianceCard
+            key={index}
+            index={index}
+            appliances={appliances}
+          />
+        ))}
+        <div
+          className="flex items-center justify-center w-80 h-80 mx-auto border-2 border-dashed border-gray-300 rounded-2xl cursor-pointer hover:bg-gray-100 transition-all duration-200"
+          onClick={handleAddAppliance}
+        >
+          <PlusIcon className="w-12 h-12 text-gray-500" />
+        </div>
+      </div>
       <div className="flex justify-center mt-8 space-x-4">
         <Button
           variant="outline"
-          onClick={() => setCurrentStep("scenarios")}
+          onClick={handleBack}
+          className="border-gray-300  focus:ring-2  transition-all duration-200"
         >
           Voltar
         </Button>
         <Button
           variant="outline"
-          onClick={handleNextClick}
+          onClick={handleProceed}
+          disabled={selectedAppliances.length === 0}
+          className="border-gray-300  focus:ring-2  disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
         >
           Próximo
         </Button>
@@ -124,4 +125,4 @@ const Appliances = () => {
   );
 };
 
-export default Appliances;
+export default AppliancesPage;
