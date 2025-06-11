@@ -38,7 +38,8 @@ const AppliancesPage = () => {
 
   if (isError) {
     console.error("Erro ao buscar appliances:", error);
-    return <div className="flex justify-center items-center h-screen">Erro ao buscar eletrodomésticos: {error?.message || "Erro desconhecido"}</div>;
+    const errorMessage = error instanceof Error ? error.message : String(error) || "Erro desconhecido";
+    return <div className="flex justify-center items-center h-screen">Erro ao buscar eletrodomésticos: {errorMessage}</div>;
   }
 
   if (!appliances || appliances.length === 0) {
@@ -79,7 +80,7 @@ const AppliancesPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl text-black  font-bold text-center mb-8">
+      <h1 className="text-2xl text-gray-800 font-bold text-center mb-8">
         Selecione os Eletrodomésticos
       </h1>
       {selectedAppliances.length > 0 && (
@@ -116,7 +117,7 @@ const AppliancesPage = () => {
           variant="outline"
           onClick={handleProceed}
           disabled={selectedAppliances.length === 0}
-          className="border-gray-300  focus:ring-2  disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+          className="border-gray-300 text-gray-80 focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
         >
           Próximo
         </Button>
