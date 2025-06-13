@@ -52,7 +52,7 @@ const AppliancesPage = () => {
   }
 
   if (showProduct && debouncedWatts > 0 && debouncedWatts <= MAX_WATTS) {
-    return <ProductIndex totalWatts={debouncedWatts} products={products} productImages={productImages} />;
+    return <ProductIndex totalWatts={debouncedWatts} products={products || []} productImages={productImages || []} />;
   }
 
   const handleAddAppliance = () => {
