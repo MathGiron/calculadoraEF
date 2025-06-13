@@ -1,4 +1,3 @@
-// components/produtos/ProductCard.tsx
 "use client";
 import Image from "next/image";
 
@@ -16,18 +15,17 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  console.log("ProductCard renderizado com product:", product);
-  const price = parseFloat(product.price).toFixed(2);
+  const price = parseFloat(product.price || "0.00").toFixed(2);
 
   return (
     <div className="mx-auto w-80">
       <div className="group relative h-full overflow-hidden rounded-2xl border border-zinc-100 bg-white transition duration-200 hover:shadow-xl">
         <div className="relative aspect-[16/10] w-full overflow-hidden rounded-tl-lg rounded-tr-lg bg-white">
           <Image
-            src={product.image}
+            src={product.image || "/placeholder-image.png"}
             alt={product.title}
             layout="fill"
-            objectFit="contain" // Mudado de "cover" para "contain"
+            objectFit="contain"
             className="transform transition duration-200 group-hover:scale-95 group-hover:rounded-2xl"
           />
         </div>

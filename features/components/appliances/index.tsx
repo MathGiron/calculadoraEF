@@ -1,54 +1,58 @@
-// components/appliances/index.tsx
 "use client";
 import React, { useState, useEffect } from "react";
-import { useFetchAppliances } from "hooks";
+import { useFetchAppliances, useFetchProducts, useFetchProductImages } from "hooks";
 import { useAtom } from "jotai";
-import { selectedScenarioAtom, selectedAppliancesAtom, currentStepAtom } from "lib/atoms";
+import { selectedScenarioAtom, selectedAppliancesAtom, currentStepAtom, totalWattsAtom } from "lib";
 import { ApplianceCard } from "aceternity";
 import { ProductIndex } from "../produtos";
-import { Button } from "ui/button";
+import { Button } from "@/features/components/ui/button";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { useEnergyCalculation } from "hooks";
+import ErrorPage from "@/features/components/error";
+
+const MAX_WATTS = 3500;
 
 const AppliancesPage = () => {
   const [selectedScenario] = useAtom(selectedScenarioAtom);
   const [selectedAppliances, setSelectedAppliances] = useAtom(selectedAppliancesAtom);
   const [, setCurrentStep] = useAtom(currentStepAtom);
+  const [, setTotalWatts] = useAtom(totalWattsAtom);
   const [showProduct, setShowProduct] = useState<boolean>(false);
   const [debouncedWatts, setDebouncedWatts] = useState<number>(0);
-  const { data: appliances, isLoading, isError, error } = useFetchAppliances(selectedScenario || "");
+  const [showError, setShowError] = useState<boolean>(false);
+  const { data: appliances, isLoading, isError } = useFetchAppliances(selectedScenario || "");
   const { totalWatts } = useEnergyCalculation();
+  const { data: products, isLoading: isProductsLoading, isError: isProductsError } = useFetchProducts(totalWatts);
+  const { data: productImages } = useFetchProductImages();
 
   useEffect(() => {
+    setTotalWatts(totalWatts); // Atualiza totalWattsAtom
     if (showProduct) {
       const timeout = setTimeout(() => {
         setDebouncedWatts(totalWatts);
       }, 500);
       return () => clearTimeout(timeout);
     }
-  }, [totalWatts, showProduct]);
-
-  console.log("AppliancesPage renderizado com scenarioId:", selectedScenario);
-  console.log("Estado do useFetchAppliances:", { isLoading, isError, appliances });
-  console.log("Total watts calculado:", totalWatts);
+  }, [totalWatts, showProduct, setTotalWatts]);
 
   if (isLoading) {
     return <div className="flex justify-center items-center h-screen">Carregando eletrodomésticos...</div>;
   }
 
   if (isError) {
-    console.error("Erro ao buscar appliances:", error);
-    const errorMessage = error instanceof Error ? error.message : String(error) || "Erro desconhecido";
-    return <div className="flex justify-center items-center h-screen">Erro ao buscar eletrodomésticos: {errorMessage}</div>;
+    return <div className="flex justify-center items-center h-screen">Erro ao buscar eletrodomésticos</div>;
   }
 
   if (!appliances || appliances.length === 0) {
-    console.log("Nenhum appliance disponível para scenarioId:", selectedScenario);
     return <p className="flex justify-center items-center h-screen">Nenhum eletrodoméstico disponível.</p>;
   }
 
-  if (showProduct && debouncedWatts > 0) {
-    return <ProductIndex totalWatts={debouncedWatts} />;
+  if (showError) {
+    return <ErrorPage />;
+  }
+
+  if (showProduct && debouncedWatts > 0 && debouncedWatts <= MAX_WATTS) {
+    return <ProductIndex totalWatts={debouncedWatts} products={products} productImages={productImages} />;
   }
 
   const handleAddAppliance = () => {
@@ -64,12 +68,20 @@ const AppliancesPage = () => {
         svgName: defaultAppliance.svgName || "",
       },
     ]);
-    console.log("Novo appliance adicionado:", selectedAppliances);
   };
 
   const handleProceed = () => {
-    console.log("Aparelhos selecionados:", selectedAppliances);
-    console.log("Consumo total em W/h:", totalWatts);
+    if (totalWatts > MAX_WATTS) {
+      setShowError(true);
+      return;
+    }
+    if (isProductsLoading) {
+      return;
+    }
+    if (isProductsError || !products || products.length === 0) {
+      setShowError(true);
+      return;
+    }
     setShowProduct(true);
     setCurrentStep("products");
   };
@@ -109,7 +121,7 @@ const AppliancesPage = () => {
         <Button
           variant="outline"
           onClick={handleBack}
-          className="border-gray-300  focus:ring-2  transition-all duration-200"
+          className="border-gray-300 focus:ring-2 transition-all duration-200"
         >
           Voltar
         </Button>
