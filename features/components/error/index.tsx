@@ -53,7 +53,7 @@ const ErrorPage = () => {
         <p className="text-base text-gray-600 text-center mb-8">
           O consumo de{" "}
           <span className="font-bold text-gray-800">{totalWatts.toFixed(0)} W/h</span>{" "}
-          é muito alto, mas uma boa opção com alta capacidade são os produtos abaixo, baseados em 3500 W/h:
+          é muito alto, mas uma boa opção com alta capacidade são os produtos abaixo:
         </p>
         {isProductsLoading || isImagesLoading ? (
           <p className="text-center text-gray-600">Carregando recomendações...</p>

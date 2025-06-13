@@ -1,7 +1,7 @@
 // components/produtos/index.tsx
 "use client";
 import React from "react";
-import { useFetchProducts, useFetchProductImages } from "hooks";
+import { useFetchProducts, useFetchProductImages, Produto } from "hooks";
 import { ProductCard } from "aceternity";
 import { Button } from "ui/button";
 import { useAtom } from "jotai";
@@ -9,6 +9,8 @@ import { currentStepAtom } from "lib/atoms";
 
 interface ProductIndexProps {
   totalWatts: number;
+  products?: Produto[];
+  productImages?: Produto[];
 }
 
 export const ProductIndex = ({ totalWatts }: ProductIndexProps) => {
