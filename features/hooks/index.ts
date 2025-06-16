@@ -3,6 +3,7 @@ export *from "./api";
 export *from "./useEnergyCalculation";
 import { useQuery } from "@tanstack/react-query";
 import { Response, Produto, CalculoResponse, fetchData, createHeaders, BASE_URL } from ".";
+import { Appliance } from "./types";
 
 const transformToAppliance = (response: Response): Appliance => ({
   id: response.id,
