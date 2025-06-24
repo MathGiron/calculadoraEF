@@ -1,4 +1,3 @@
-// components/produtos/index.tsx
 "use client";
 import React from "react";
 import { useFetchProducts, useFetchProductImages, Produto } from "hooks";
@@ -36,13 +35,13 @@ export const ProductIndex = ({ totalWatts }: ProductIndexProps) => {
     );
   }
 
-  if (!products || !Array.isArray(products) || products.length === 0 || !productImages || !Array.isArray(productImages)) {
-    console.log("Nenhum produto válido retornado:", { products, productImages });
+  if (!products || !Array.isArray(products) || products.length === 0) {
+    console.log("Nenhum produto válido retornado:", { products });
     return <p className="text-center">Nenhum produto recomendado disponível.</p>;
   }
 
   console.log("Produtos brutos da API (/calculo):", products);
-  console.log("Produtos com imagens (/produtos):", productImages);
+  console.log("Produtos com imagens (/produtos):", productImages || "Sem imagens");
 
   const uniqueProducts = Array.from(
     new Map(products.map((product) => [product.id, product])).values()
@@ -51,29 +50,46 @@ export const ProductIndex = ({ totalWatts }: ProductIndexProps) => {
 
   const recommendedProducts = uniqueProducts
     .map((product) => {
+      console.log(`Processando produto ${product.id}:`, product);
+
       if (!product || !product.id || !product.title || !product.variants || !Array.isArray(product.variants)) {
         console.error("Produto inválido, sem id, title ou variants:", product);
         return null;
       }
 
-      const productWithImage = productImages.find(p => p.id === product.id);
-      let image: string | undefined = productWithImage?.image || product.image;
-      if (!image && product.metafields) {
-        console.log(`Imagem ausente para produto ${product.id}, buscando em metafields:`, product.metafields);
+      let image: string | undefined;
+      if (productImages && Array.isArray(productImages)) {
+        const productWithImage = productImages.find((p) => p.id === product.id);
+        image = productWithImage?.image || product.image;
+      } else {
+        image = product.image;
+      }
+
+      if (!image && product.metafields && Array.isArray(product.metafields)) {
+        console.log(`Buscando em metafields para ${product.id}:`, product.metafields);
         const imageMetafield = product.metafields.find(
-          m => m.key.toLowerCase().includes("image") || m.key.toLowerCase().includes("photo")
+          (m) => m.key.toLowerCase().includes("image") || m.key.toLowerCase().includes("photo")
         );
         image = imageMetafield?.value;
       }
 
-      if (!image) {
-        console.warn(`Produto ${product.id} sem imagem válida, será ignorado`);
-        return null;
+      const isValidUrl = (url: string) => {
+        try {
+          new URL(url);
+          return true;
+        } catch {
+          return false;
+        }
+      };
+
+      if (!image || !isValidUrl(image)) {
+        console.warn(`Imagem inválida ou ausente para ${product.id}:`, image);
+        image = "/placeholder-image.png";
+      } else {
+        console.log(`Imagem válida para ${product.id}:`, image);
       }
 
-      const availableVariant = product.variants.find(v => v.inventoryQuantity > 0) || product.variants[0];
-
-      console.log(`Imagem selecionada para produto ${product.id}:`, image);
+      const availableVariant = product.variants.find((v) => v.inventoryQuantity > 0) || product.variants[0];
 
       return {
         id: product.id,
@@ -84,7 +100,10 @@ export const ProductIndex = ({ totalWatts }: ProductIndexProps) => {
         purchaseLink: `https://ecoflow-timber.com.br/products/${product.id}`,
       };
     })
-    .filter(Boolean) as { id: string; title: string; image: string; price: string; inventoryQuantity: number; purchaseLink: string }[];
+    .filter((p): p is NonNullable<typeof p> => {
+      if (!p) console.warn("Produto filtrado como inválido:", p);
+      return !!p;
+    });
 
   console.log("Produtos recomendados preparados:", recommendedProducts);
 

@@ -20,7 +20,7 @@
     "jotai": "^2.12.2",
     "lucide-react": "^0.514.0",
     "motion": "^12.5.0",
-    "next": "15.2.3",
+    "next": "15.3.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwind-merge": "^3.0.2"
